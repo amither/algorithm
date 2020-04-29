@@ -81,6 +81,14 @@ func deque() {
 			}
 		}
 		// not in drop state
+		//If we get here, then we're not in dropping state. If the sojourn time has been
+		//above target for interval, then we decide whether it's time to enter dropping state.
+		//We do so if we've been either in dropping state recently or above target for a relatively long time.
+		//The "recently" check helps ensure that when we're successfully controlling the queue we react quickly (in
+		//one interval) and start with the drop rate that controlled the queue last time rather than relearn the
+		//correct rate from scratch. If we haven't been dropping recently, the
+		//"long time above" check adds some hysteresis to the state entry so we don't drop on a slightly
+		//bigger-than-normal traffic pulse into an otherwise quiet queue.
 	} else if r.ok_to_drop && (now.Sub(drop_next) < interval || now.Sub(first_above_time) >= interval) {
 		dropping = true
 		drop(r)
